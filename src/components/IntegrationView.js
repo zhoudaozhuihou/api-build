@@ -17,7 +17,11 @@ import {
   ListItemText,
   Chip,
   Snackbar,
-  IconButton
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import SaveIcon from '@material-ui/icons/Save';
@@ -29,6 +33,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import DescriptionIcon from '@material-ui/icons/Description';
 import HttpIcon from '@material-ui/icons/Http';
 import ApiTypeSelector from './ApiTypeSelector';
+import ParametersAndResponse from './ParametersAndResponse';
 
 const useStyles = makeStyles({
   root: {
@@ -100,6 +105,68 @@ const useStyles = makeStyles({
   },
   apiTypeSelector: {
     marginBottom: '24px',
+  },
+  section: {
+    marginBottom: '24px',
+  },
+  urlField: {
+    marginTop: '16px',
+    marginBottom: '24px',
+  },
+  formControl: {
+    minWidth: '200px',
+    marginBottom: '16px',
+    marginRight: '16px',
+  },
+  statusChip: {
+    backgroundColor: '#4caf50',
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  endpointContainer: {
+    backgroundColor: '#f5f5f5',
+    padding: '16px',
+    borderRadius: '4px',
+    fontFamily: 'monospace',
+    marginBottom: '24px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  infoBox: {
+    backgroundColor: '#e3f2fd',
+    padding: '16px',
+    borderRadius: '4px',
+    marginBottom: '24px',
+  },
+  authenticationSection: {
+    backgroundColor: '#f5f5f5',
+    padding: '16px',
+    borderRadius: '4px',
+    marginBottom: '24px',
+  },
+  authKey: {
+    fontFamily: 'monospace',
+    fontWeight: 'bold',
+    marginRight: '8px',
+  },
+  authValue: {
+    fontFamily: 'monospace',
+  },
+  responseContainer: {
+    backgroundColor: '#f9f9f9',
+    padding: '16px',
+    borderRadius: '4px',
+    marginTop: '24px',
+  },
+  responseHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  contentTypeChip: {
+    backgroundColor: '#3f51b5',
+    color: 'white',
+    marginLeft: '8px',
   }
 });
 
@@ -117,32 +184,176 @@ TabPanel.propTypes = {
   index: PropTypes.number.isRequired,
 };
 
-const IntegrationView = ({
-  connection,
-  tables,
-  relationships,
-  parameters,
-  responseFields,
-  sqlQuery
-}) => {
+// Demo tables for API integration configuration
+const tables = [
+  {
+    name: 'translations',
+    displayName: '音频翻译',
+    description: '将音频文件翻译成文本',
+    columns: [
+      'file',
+      'model',
+      'prompt',
+      'response_format',
+      'temperature'
+    ]
+  }
+];
+
+// Demo nested parameters for translation API
+const translationRequestParams = {
+  file: { 
+    type: 'FILE', 
+    required: true, 
+    description: '要翻译的音频文件对象(不是文件名)' 
+  },
+  model: { 
+    type: 'STRING', 
+    required: true, 
+    description: '要使用的模型ID，目前只有whisper-1是可用的' 
+  },
+  prompt: { 
+    type: 'STRING', 
+    required: false, 
+    description: '一个可选的文本，用于指导模型的风格或继续之前的音频对话' 
+  },
+  response_format: { 
+    type: 'STRING', 
+    required: false, 
+    description: '翻译结果的格式，可选值: json, text, srt, verbose_json, vtt' 
+  },
+  temperature: { 
+    type: 'NUMBER', 
+    required: false, 
+    description: '默认为0，采样温度介于0和1之间，更高的值如0.8会使输出更随机而较低的值0.2会使其更聚焦和确定性' 
+  }
+};
+
+// Demo response fields
+const translationResponseFields = {
+  text: { 
+    type: 'STRING', 
+    include: true, 
+    description: '翻译后的文本' 
+  }
+};
+
+// 添加一个格式化嵌套JSON示例的函数
+const formatNestedJsonExample = (obj, indent = 0) => {
+  const indentation = '  '.repeat(indent);
+  let result = '{\n';
+  
+  Object.entries(obj).forEach(([key, value], index, arr) => {
+    const isLast = index === arr.length - 1;
+    const comma = isLast ? '' : ',';
+    
+    if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+      // 处理嵌套对象
+      result += `${indentation}  "${key}": ${formatNestedJsonExample(value, indent + 1)}${comma}\n`;
+    } else if (Array.isArray(value)) {
+      // 处理数组
+      result += `${indentation}  "${key}": [\n`;
+      value.forEach((item, i) => {
+        const itemComma = i === value.length - 1 ? '' : ',';
+        if (typeof item === 'object' && item !== null) {
+          result += `${indentation}    ${formatNestedJsonExample(item, indent + 2)}${itemComma}\n`;
+        } else {
+          const itemValue = typeof item === 'string' ? `"${item}"` : item;
+          result += `${indentation}    ${itemValue}${itemComma}\n`;
+        }
+      });
+      result += `${indentation}  ]${comma}\n`;
+    } else {
+      // 处理基本类型
+      const displayValue = typeof value === 'string' ? `"${value}"` : value;
+      result += `${indentation}  "${key}": ${displayValue}${comma}\n`;
+    }
+  });
+  
+  result += `${indentation}}`;
+  return result;
+};
+
+// 为OpenAI翻译API创建一个更丰富的嵌套响应示例
+const sampleOpenAITranslationResponse = {
+  text: '这是翻译后的文本内容示例。这可能是一段很长的文本，取决于输入的音频长度。',
+  metadata: {
+    processing_time: 0.8723,
+    model_version: 'whisper-1-2023-10-15',
+    audio_details: {
+      duration: 12.5,
+      channels: 2,
+      sample_rate: 44100
+    }
+  },
+  translation_stats: {
+    word_count: 24,
+    character_count: 42,
+    confidence_score: 0.92
+  }
+};
+
+const IntegrationView = ({ onSave }) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState(0);
   const [configName, setConfigName] = useState('My API Configuration');
   const [configJson, setConfigJson] = useState('');
-  const [apiEndpoint, setApiEndpoint] = useState('/api/v1/custom');
+  const [apiEndpoint, setApiEndpoint] = useState('https://api.openai.com/v1/audio/translations');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [selectedApiType, setSelectedApiType] = useState(null);
   const [httpMethod, setHttpMethod] = useState('POST');
+  const [requestFormat, setRequestFormat] = useState('multipart/form-data');
+  const [responseFormat, setResponseFormat] = useState('application/json');
+  const [selectedTable, setSelectedTable] = useState('translations');
+  const [parameters, setParameters] = useState([]);
+  const [responseFields, setResponseFields] = useState([]);
   
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
   
-  // Handle API type selection
-  const handleApiTypeSelected = (category, url) => {
-    setSelectedApiType(category);
+  const handleApiTypeSelected = (apiType, url) => {
+    setSelectedApiType(apiType);
     setApiEndpoint(url);
+  };
+  
+  const handleUrlChange = (e) => {
+    setApiEndpoint(e.target.value);
+  };
+  
+  const handleHttpMethodChange = (e) => {
+    setHttpMethod(e.target.value);
+  };
+  
+  const handleRequestFormatChange = (e) => {
+    setRequestFormat(e.target.value);
+  };
+  
+  const handleParametersChange = (params) => {
+    setParameters(params);
+  };
+  
+  const handleResponseFieldsChange = (fields) => {
+    setResponseFields(fields);
+  };
+  
+  const handleSaveIntegration = () => {
+    // Create an integration configuration object
+    const integrationConfig = {
+      apiUrl: apiEndpoint,
+      httpMethod,
+      requestFormat,
+      responseFormat,
+      selectedTable,
+      parameters,
+      responseFields
+    };
+    
+    // Notify parent component with the configuration
+    if (onSave) {
+      onSave(integrationConfig);
+    }
   };
   
   // Generate API config JSON
@@ -151,20 +362,20 @@ const IntegrationView = ({
     const config = {
       name: configName,
       database: {
-        connection: connection ? {
-          type: connection.type,
-          host: connection.host,
-          port: connection.port,
-          database: connection.database,
+        connection: selectedApiType ? {
+          type: selectedApiType.type,
+          host: selectedApiType.host,
+          port: selectedApiType.port,
+          database: selectedApiType.database,
         } : null,
       },
       tables: tables || [],
-      relationships: relationships || [],
+      relationships: [],
       parameters: parameters || [],
       response: {
         fields: responseFields || [],
       },
-      sql: sqlQuery || '',
+      sql: '',
       endpoint: apiEndpoint,
       method: httpMethod,
       apiType: selectedApiType ? selectedApiType.id : null
@@ -209,10 +420,6 @@ const IntegrationView = ({
   
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
-  };
-  
-  const handleMethodChange = (method) => {
-    setHttpMethod(method);
   };
 
   return React.createElement(
@@ -265,8 +472,8 @@ const IntegrationView = ({
             React.createElement(
               Typography,
               { variant: 'body2' },
-              connection 
-                ? `${connection.type} @ ${connection.host}:${connection.port}/${connection.database}`
+              selectedApiType 
+                ? `${selectedApiType.type} @ ${selectedApiType.host}:${selectedApiType.port}/${selectedApiType.database}`
                 : 'Not configured'
             )
           ),
@@ -282,7 +489,7 @@ const IntegrationView = ({
               Typography,
               { variant: 'body2' },
               tables && tables.length > 0 
-                ? tables.join(', ')
+                ? tables.map(table => table.displayName).join(', ')
                 : 'None selected'
             )
           )
@@ -375,7 +582,7 @@ const IntegrationView = ({
             {
               key: method,
               label: method,
-              onClick: () => handleMethodChange(method),
+              onClick: () => handleHttpMethodChange({ target: { value: method } }),
               color: httpMethod === method ? 'primary' : 'default',
               className: `${classes.chip} ${classes.methodChip}`,
             }
@@ -507,17 +714,151 @@ const IntegrationView = ({
           React.createElement(CloseIcon, { fontSize: 'small' })
         )
       }
+    ),
+    
+    React.createElement(
+      'div',
+      { className: classes.section },
+      React.createElement(
+        Typography,
+        { variant: 'h6', gutterBottom: true },
+        'API 类型'
+      ),
+      React.createElement(
+        ApiTypeSelector,
+        { 
+          onTypeSelected: handleApiTypeSelected,
+          initialUrl: apiEndpoint
+        }
+      )
+    ),
+    
+    React.createElement(
+      'div',
+      { className: classes.endpointContainer },
+      React.createElement(
+        Chip,
+        { label: httpMethod, className: classes.methodChip }
+      ),
+      React.createElement(
+        Typography,
+        { variant: 'body1', component: 'span', style: { fontFamily: 'monospace' } },
+        apiEndpoint
+      )
+    ),
+    
+    React.createElement(
+      'div',
+      { className: classes.authenticationSection },
+      React.createElement(
+        Typography,
+        { variant: 'h6', gutterBottom: true },
+        '请求参数'
+      ),
+      React.createElement(
+        Typography,
+        { variant: 'subtitle2', gutterBottom: true },
+        'Authorization'
+      ),
+      React.createElement(
+        Box,
+        { display: 'flex', alignItems: 'center', mb: 2 },
+        React.createElement(
+          'span',
+          { className: classes.authKey },
+          'Authorization:'
+        ),
+        React.createElement(
+          'span',
+          { className: classes.authValue },
+          'Bearer *******************'
+        )
+      ),
+      React.createElement(
+        Typography,
+        { variant: 'subtitle2', gutterBottom: true },
+        'Body 参数'
+      ),
+      React.createElement(
+        Box,
+        { display: 'flex', alignItems: 'center', mb: 1 },
+        React.createElement(
+          'span',
+          { className: classes.authKey },
+          'Content-Type:'
+        ),
+        React.createElement(
+          'span',
+          { className: classes.authValue },
+          requestFormat
+        )
+      )
+    ),
+    
+    React.createElement(
+      ParametersAndResponse,
+      {
+        tables: tables,
+        selectedTable: selectedTable,
+        onParametersChange: handleParametersChange,
+        onResponseFieldsChange: handleResponseFieldsChange
+      }
+    ),
+    
+    React.createElement(
+      'div',
+      { className: classes.responseContainer },
+      React.createElement(
+        'div',
+        { className: classes.responseHeader },
+        React.createElement(
+          Chip,
+          { label: '成功(200)', className: classes.statusChip }
+        ),
+        React.createElement(
+          Typography,
+          { variant: 'body1', component: 'span', style: { marginLeft: '12px' } },
+          '内容格式:'
+        ),
+        React.createElement(
+          Chip,
+          { label: responseFormat, className: classes.contentTypeChip }
+        )
+      ),
+      React.createElement(
+        'div',
+        { 
+          style: { 
+            backgroundColor: '#f5f5f5', 
+            padding: '16px', 
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+            whiteSpace: 'pre-wrap',
+            overflowX: 'auto'
+          } 
+        },
+        formatNestedJsonExample(sampleOpenAITranslationResponse)
+      )
+    ),
+    
+    React.createElement(
+      Box,
+      { mt: 3, display: 'flex', justifyContent: 'flex-end' },
+      React.createElement(
+        Button,
+        {
+          variant: 'contained',
+          color: 'primary',
+          onClick: handleSaveIntegration
+        },
+        '保存集成'
+      )
     )
   );
 };
 
 IntegrationView.propTypes = {
-  connection: PropTypes.object,
-  tables: PropTypes.array,
-  relationships: PropTypes.array,
-  parameters: PropTypes.array,
-  responseFields: PropTypes.array,
-  sqlQuery: PropTypes.string
+  onSave: PropTypes.func
 };
 
 export default IntegrationView; 

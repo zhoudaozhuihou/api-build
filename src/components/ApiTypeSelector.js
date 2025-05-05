@@ -78,6 +78,21 @@ const useStyles = makeStyles({
     borderRight: '1px solid #e0e0e0',
     overflow: 'auto',
     backgroundColor: '#f9f9f9',
+    maxHeight: '300px',
+    '&::-webkit-scrollbar': {
+      width: '6px',
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: '#f1f1f1',
+      borderRadius: '3px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#c1c1c1',
+      borderRadius: '3px',
+      '&:hover': {
+        backgroundColor: '#a8a8a8',
+      },
+    },
   },
   cascaderItem: {
     padding: '12px 16px',
@@ -155,39 +170,176 @@ const useStyles = makeStyles({
 const apiCategories = [
   {
     id: '1',
-    label: 'Custom: 1',
+    label: '认证与安全',
     children: [
-      {
-        id: '1-1',
-        label: 'Custom: 1-1',
+      { id: '1-1', label: '用户认证', 
         children: [
-          { id: '1-1-1', label: 'Custom: 1-1-1', path: '/api/v1/custom/level1/level1-1' }
-        ]
+          { id: '1-1-1', label: '用户登录', path: '/api/v1/auth/login' },
+          { id: '1-1-2', label: '用户注册', path: '/api/v1/auth/register' },
+          { id: '1-1-3', label: '刷新令牌', path: '/api/v1/auth/refresh-token' },
+          { id: '1-1-4', label: '密码重置', path: '/api/v1/auth/reset-password' },
+          { id: '1-1-5', label: '邮箱验证', path: '/api/v1/auth/verify-email' },
+          { id: '1-1-6', label: '发送验证码', path: '/api/v1/auth/send-code' },
+          { id: '1-1-7', label: '验证码校验', path: '/api/v1/auth/verify-code' }
+        ] 
       },
-      { id: '1-2', label: 'Custom: 1-2', children: [] },
-      { id: '1-3', label: 'Custom: 1-3', children: [] },
-      { id: '1-4', label: 'Custom: 1-4', children: [] }
+      { id: '1-2', label: 'OAuth集成', 
+        children: [
+          { id: '1-2-1', label: 'Google OAuth', path: '/api/v1/oauth/google' },
+          { id: '1-2-2', label: 'Facebook OAuth', path: '/api/v1/oauth/facebook' },
+          { id: '1-2-3', label: 'GitHub OAuth', path: '/api/v1/oauth/github' },
+          { id: '1-2-4', label: 'LinkedIn OAuth', path: '/api/v1/oauth/linkedin' },
+          { id: '1-2-5', label: 'Twitter OAuth', path: '/api/v1/oauth/twitter' }
+        ] 
+      },
+      { id: '1-3', label: '权限管理', 
+        children: [
+          { id: '1-3-1', label: '角色列表', path: '/api/v1/roles' },
+          { id: '1-3-2', label: '权限列表', path: '/api/v1/permissions' },
+          { id: '1-3-3', label: '用户角色分配', path: '/api/v1/user-roles' },
+          { id: '1-3-4', label: '角色权限分配', path: '/api/v1/role-permissions' }
+        ] 
+      }
     ]
   },
   {
     id: '2',
-    label: 'Custom: 2',
+    label: '内容管理',
     children: [
-      { id: '2-1', label: 'Custom: 2-1', children: [] },
-      { 
-        id: '2-2', 
-        label: 'Custom: 2-2', 
+      { id: '2-1', label: '文章管理', 
         children: [
-          { id: '2-2-1', label: 'Custom: 2-2-1', path: '/api/v2/custom/level2/level2-1' },
-          { id: '2-2-2', label: 'Custom: 2-2-2', path: '/api/v2/custom/level2/level2-2' }
+          { id: '2-1-1', label: '文章列表', path: '/api/v1/articles' },
+          { id: '2-1-2', label: '创建文章', path: '/api/v1/articles/create' },
+          { id: '2-1-3', label: '更新文章', path: '/api/v1/articles/update' },
+          { id: '2-1-4', label: '删除文章', path: '/api/v1/articles/delete' },
+          { id: '2-1-5', label: '文章分类', path: '/api/v1/article-categories' },
+          { id: '2-1-6', label: '文章标签', path: '/api/v1/article-tags' },
+          { id: '2-1-7', label: '文章评论', path: '/api/v1/article-comments' },
+          { id: '2-1-8', label: '文章点赞', path: '/api/v1/article-likes' }
+        ] 
+      },
+      { id: '2-2', label: '媒体管理', 
+        children: [
+          { id: '2-2-1', label: '上传图片', path: '/api/v1/media/upload-image' },
+          { id: '2-2-2', label: '上传视频', path: '/api/v1/media/upload-video' },
+          { id: '2-2-3', label: '上传音频', path: '/api/v1/media/upload-audio' },
+          { id: '2-2-4', label: '媒体库', path: '/api/v1/media/library' },
+          { id: '2-2-5', label: '媒体处理', path: '/api/v1/media/process' }
         ] 
       }
     ]
   },
   {
     id: '3',
-    label: 'Custom: 3',
-    children: []
+    label: '用户管理',
+    children: [
+      { id: '3-1', label: '用户资料', 
+        children: [
+          { id: '3-1-1', label: '获取用户信息', path: '/api/v1/users/profile' },
+          { id: '3-1-2', label: '更新用户信息', path: '/api/v1/users/update' },
+          { id: '3-1-3', label: '用户偏好设置', path: '/api/v1/users/preferences' },
+          { id: '3-1-4', label: '用户头像', path: '/api/v1/users/avatar' }
+        ] 
+      },
+      { id: '3-2', label: '用户关系', 
+        children: [
+          { id: '3-2-1', label: '用户关注', path: '/api/v1/user-follows' },
+          { id: '3-2-2', label: '用户好友', path: '/api/v1/user-friends' },
+          { id: '3-2-3', label: '用户黑名单', path: '/api/v1/user-blacklist' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: '4',
+    label: '数据分析',
+    children: [
+      { id: '4-1', label: '用户行为', 
+        children: [
+          { id: '4-1-1', label: '页面访问', path: '/api/v1/analytics/page-views' },
+          { id: '4-1-2', label: '用户点击', path: '/api/v1/analytics/user-clicks' },
+          { id: '4-1-3', label: '停留时间', path: '/api/v1/analytics/time-spent' },
+          { id: '4-1-4', label: '转化率', path: '/api/v1/analytics/conversion-rate' },
+          { id: '4-1-5', label: '跳出率', path: '/api/v1/analytics/bounce-rate' }
+        ] 
+      },
+      { id: '4-2', label: '报表导出', 
+        children: [
+          { id: '4-2-1', label: '日报表', path: '/api/v1/reports/daily' },
+          { id: '4-2-2', label: '周报表', path: '/api/v1/reports/weekly' },
+          { id: '4-2-3', label: '月报表', path: '/api/v1/reports/monthly' },
+          { id: '4-2-4', label: '自定义报表', path: '/api/v1/reports/custom' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: '5',
+    label: '支付系统',
+    children: [
+      { id: '5-1', label: '支付方式', 
+        children: [
+          { id: '5-1-1', label: '支付宝', path: '/api/v1/payment/alipay' },
+          { id: '5-1-2', label: '微信支付', path: '/api/v1/payment/wechat' },
+          { id: '5-1-3', label: '银联支付', path: '/api/v1/payment/unionpay' },
+          { id: '5-1-4', label: 'PayPal', path: '/api/v1/payment/paypal' },
+          { id: '5-1-5', label: 'Stripe', path: '/api/v1/payment/stripe' }
+        ] 
+      },
+      { id: '5-2', label: '交易管理', 
+        children: [
+          { id: '5-2-1', label: '交易记录', path: '/api/v1/transactions' },
+          { id: '5-2-2', label: '退款处理', path: '/api/v1/refunds' },
+          { id: '5-2-3', label: '支付回调', path: '/api/v1/payment-callbacks' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: '6',
+    label: '消息通知',
+    children: [
+      { id: '6-1', label: '站内通知', 
+        children: [
+          { id: '6-1-1', label: '系统通知', path: '/api/v1/notifications/system' },
+          { id: '6-1-2', label: '用户通知', path: '/api/v1/notifications/user' },
+          { id: '6-1-3', label: '消息设置', path: '/api/v1/notifications/settings' }
+        ] 
+      },
+      { id: '6-2', label: '外部通知', 
+        children: [
+          { id: '6-2-1', label: '邮件发送', path: '/api/v1/notifications/email' },
+          { id: '6-2-2', label: '短信发送', path: '/api/v1/notifications/sms' },
+          { id: '6-2-3', label: '推送通知', path: '/api/v1/notifications/push' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: '7',
+    label: 'OpenAI API',
+    children: [
+      { id: '7-1', label: '文本处理', 
+        children: [
+          { id: '7-1-1', label: '文本补全', path: '/api/v1/openai/completions' },
+          { id: '7-1-2', label: '文本嵌入', path: '/api/v1/openai/embeddings' },
+          { id: '7-1-3', label: '文本编辑', path: '/api/v1/openai/edits' }
+        ] 
+      },
+      { id: '7-2', label: '图像处理', 
+        children: [
+          { id: '7-2-1', label: '图像生成', path: '/api/v1/openai/images/generations' },
+          { id: '7-2-2', label: '图像编辑', path: '/api/v1/openai/images/edits' },
+          { id: '7-2-3', label: '图像变体', path: '/api/v1/openai/images/variations' }
+        ] 
+      },
+      { id: '7-3', label: '音频处理', 
+        children: [
+          { id: '7-3-1', label: '音频转录', path: '/api/v1/openai/audio/transcriptions' },
+          { id: '7-3-2', label: '音频翻译', path: '/api/v1/audio/translations' }
+        ] 
+      }
+    ]
   }
 ];
 

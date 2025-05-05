@@ -217,59 +217,88 @@ const transformTypes = [
   { value: 'CUSTOM', label: 'Custom Expression' },
 ];
 
-// Demo nested parameters
+// Demo nested parameters for translation API
 const demoNestedParams = {
-  user: {
-    id: { type: 'INTEGER', required: true, description: 'User ID' },
-    profile: {
-      firstName: { type: 'STRING', required: true, description: 'First name' },
-      lastName: { type: 'STRING', required: true, description: 'Last name' },
-      contactInfo: {
-        email: { type: 'STRING', required: true, description: 'Email address' },
-        phone: { type: 'STRING', required: false, description: 'Phone number' }
-      }
-    },
-    preferences: {
-      theme: { type: 'STRING', required: false, description: 'UI theme preference' },
-      notifications: { type: 'BOOLEAN', required: false, description: 'Notification settings' }
-    }
+  file: { 
+    type: 'FILE', 
+    required: true, 
+    description: '要翻译的音频文件对象(不是文件名)。格式为flac、mp3、mp4、mpeg、mpga、m4a、ogg、wav或webm。' 
   },
-  filters: {
-    dateRange: {
-      start: { type: 'DATE', required: false, description: 'Start date for filtering' },
-      end: { type: 'DATE', required: false, description: 'End date for filtering' }
-    },
-    status: { type: 'STRING', required: false, description: 'Status filter' }
+  model: { 
+    type: 'STRING', 
+    required: true, 
+    description: '要使用的模型ID，目前只有whisper-1是可用的。' 
   },
-  pagination: {
-    page: { type: 'INTEGER', required: false, description: 'Page number' },
-    limit: { type: 'INTEGER', required: false, description: 'Items per page' }
+  prompt: { 
+    type: 'STRING', 
+    required: false, 
+    description: '一个可选的文本，用于指导模型的风格或继续之前的音频对话。' 
+  },
+  response_format: { 
+    type: 'STRING', 
+    required: false, 
+    description: '翻译结果的格式，可选值: json、text、srt、verbose_json、vtt。' 
+  },
+  temperature: { 
+    type: 'NUMBER', 
+    required: false, 
+    description: '默认为0。采样温度介于0和1之间，更高的值如0.8会使输出更随机而较低的值0.2会使其更聚焦和确定性。如果设置为0，模型将使用对数概率自动提高温度直到达到特定阈值。' 
   }
 };
 
 // Demo nested response
 const demoNestedResponse = {
-  data: {
-    users: [
-      {
-        id: { type: 'INTEGER', include: true, description: 'User ID' },
-        name: { type: 'STRING', include: true, description: 'Full name' },
-        email: { type: 'STRING', include: true, description: 'Email address' },
-        role: { type: 'STRING', include: true, description: 'User role' },
-        metadata: {
-          lastLogin: { type: 'DATETIME', include: true, description: 'Last login timestamp' },
-          loginCount: { type: 'INTEGER', include: true, description: 'Number of logins' }
-        }
+  text: { 
+    type: 'STRING', 
+    include: true, 
+    description: '翻译后的文本内容' 
+  },
+  metadata: {
+    processing_time: { 
+      type: 'FLOAT', 
+      include: true, 
+      description: '处理音频文件所需的时间（秒）' 
+    },
+    model_version: { 
+      type: 'STRING', 
+      include: true, 
+      description: '使用的模型版本' 
+    },
+    audio_details: {
+      duration: { 
+        type: 'FLOAT', 
+        include: true, 
+        description: '音频文件的总时长（秒）' 
+      },
+      channels: { 
+        type: 'INTEGER', 
+        include: true, 
+        description: '音频通道数量' 
+      },
+      sample_rate: { 
+        type: 'INTEGER', 
+        include: true, 
+        description: '音频采样率' 
       }
-    ],
-    pagination: {
-      currentPage: { type: 'INTEGER', include: true, description: 'Current page number' },
-      totalPages: { type: 'INTEGER', include: true, description: 'Total number of pages' },
-      totalItems: { type: 'INTEGER', include: true, description: 'Total number of items' }
     }
   },
-  status: { type: 'STRING', include: true, description: 'Response status' },
-  timestamp: { type: 'DATETIME', include: true, description: 'Response timestamp' }
+  translation_stats: {
+    word_count: { 
+      type: 'INTEGER', 
+      include: true, 
+      description: '翻译文本的单词数量' 
+    },
+    character_count: { 
+      type: 'INTEGER', 
+      include: true, 
+      description: '翻译文本的字符数量' 
+    },
+    confidence_score: { 
+      type: 'FLOAT', 
+      include: true, 
+      description: '翻译结果的置信度（0-1之间）' 
+    }
+  }
 };
 
 const ParametersAndResponse = ({ tables, selectedTable, onParametersChange, onResponseFieldsChange }) => {
