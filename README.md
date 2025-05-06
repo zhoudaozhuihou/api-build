@@ -55,6 +55,47 @@
 - 血缘关系导入导出
 - 版本控制和历史记录
 
+---
+
+### 自动API血缘发现（Auto API Lineage Discovery）
+
+#### 功能简介
+- 平台可自动识别和建立API之间的依赖关系，无需用户手动维护。
+- 通过SQL解析、API调用链追踪、元数据比对等方式，自动生成API血缘信息。
+
+#### 前端实现思路
+- 在API创建/编辑时，前端将SQL语句发送到后端解析，自动提取涉及的表、视图等依赖。
+- 若API实现中调用了其他API，自动识别为功能依赖或同步/异步依赖。
+- 依赖信息自动写入API的`lineage.upstream`字段，血缘图自动展示。
+
+#### 伪代码示例
+```javascript
+// 假设后端有 /api/parse-sql 接口
+const handleSqlChange = async (sql) => {
+  const res = await fetch('/api/parse-sql', {
+    method: 'POST',
+    body: JSON.stringify({ sql }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+  const { tables, views } = await res.json();
+  setLineageUpstream([
+    ...tables.map(t => ({ type: 'data', source: t })),
+    ...views.map(v => ({ type: 'data', source: v }))
+  ]);
+};
+```
+
+#### 后端配合建议
+- 提供SQL解析接口，返回表、视图、字段等依赖信息。
+- 维护API元数据注册表，支持依赖比对和自动更新。
+- 支持API调用链追踪（如有微服务或函数调用，可通过日志或代码分析自动发现依赖）。
+
+#### 集成点说明
+- `ApiBuilder.js`：在SQL生成后自动调用后端解析接口，更新依赖。
+- `ApiLineageManager.js`：自动读取`apis`的`lineage`字段，无需手动维护。
+
+---
+
 ## 技术架构
 
 - 前端框架：React
@@ -82,7 +123,6 @@ npm run build
 
 ## 未来规划
 
-- 增加自动API血缘发现功能
 - 与CI/CD流程集成
 - 支持API文档自动生成
 - 增加团队协作和角色管理功能
