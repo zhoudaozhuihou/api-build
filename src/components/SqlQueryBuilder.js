@@ -35,9 +35,9 @@ import TuneIcon from '@material-ui/icons/Tune';
 import CodeIcon from '@material-ui/icons/Code';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import { green, red, orange } from '@material-ui/core/colors';
+import { colors } from '@material-ui/core';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {
     padding: '24px',
     marginBottom: '24px',
@@ -65,13 +65,13 @@ const useStyles = makeStyles({
     padding: '8px 16px',
     marginBottom: '8px',
     backgroundColor: '#fff3e0',
-    borderLeft: `4px solid ${orange[700]}`,
+    borderLeft: `4px solid ${colors.orange[700]}`,
     display: 'flex',
     alignItems: 'center',
   },
   optimizationIcon: {
     marginRight: '12px',
-    color: orange[700],
+    color: colors.orange[700],
   },
   fieldSelector: {
     display: 'flex',
@@ -83,12 +83,12 @@ const useStyles = makeStyles({
     margin: '0 4px 4px 0',
   },
   validationSuccess: {
-    color: green[700],
+    color: colors.green[700],
     display: 'flex',
     alignItems: 'center',
   },
   validationError: {
-    color: red[700],
+    color: colors.red[700],
     display: 'flex',
     alignItems: 'center',
   },
@@ -125,7 +125,35 @@ const useStyles = makeStyles({
     alignItems: 'center',
     marginBottom: '12px',
   },
-});
+  getButton: {
+    backgroundColor: colors.blue[500],
+    color: theme.palette.common.white,
+    '&:hover': {
+      backgroundColor: colors.blue[700],
+    },
+  },
+  postButton: {
+    backgroundColor: colors.orange[500],
+    color: theme.palette.common.white,
+    '&:hover': {
+      backgroundColor: colors.orange[700],
+    },
+  },
+  putButton: {
+    backgroundColor: colors.green[500],
+    color: theme.palette.common.white,
+    '&:hover': {
+      backgroundColor: colors.green[700],
+    },
+  },
+  deleteButton: {
+    backgroundColor: colors.red[500],
+    color: theme.palette.common.white,
+    '&:hover': {
+      backgroundColor: colors.red[700],
+    },
+  },
+}));
 
 // Helper function to generate SQL based on user selections
 const generateSql = (selections) => {

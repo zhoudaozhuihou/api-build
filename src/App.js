@@ -11,9 +11,14 @@ import {
   AppBar,
   Toolbar,
   Box,
-  Divider
+  Divider,
+  Tabs,
+  Tab
 } from '@material-ui/core';
 import './App.css';
+import ApiBuilder from './components/ApiBuilder';
+import ApiLineageManager from './components/ApiLineageManager';
+import PropTypes from 'prop-types';
 
 // Import all components
 import DatabaseConnection from './components/DatabaseConnection';
@@ -22,10 +27,21 @@ import ParametersAndResponse from './components/ParametersAndResponse';
 import SqlQueryBuilder from './components/SqlQueryBuilder';
 import IntegrationView from './components/IntegrationView';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {
-    marginTop: '32px',
-    marginBottom: '32px',
+    flexGrow: 1,
+  },
+  appBar: {
+    marginBottom: theme.spacing(3),
+  },
+  title: {
+    flexGrow: 1,
+  },
+  container: {
+    padding: theme.spacing(3),
+  },
+  tabPanel: {
+    padding: theme.spacing(3),
   },
   paper: {
     padding: '24px',
@@ -41,24 +57,13 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     marginTop: '32px',
   },
-  title: {
-    flexGrow: 1,
-    color: '#fff',
-  },
-  appBar: {
-    marginBottom: '24px',
-  },
-  mainContainer: {
-    marginTop: '86px',
-    marginBottom: '32px',
-  },
   subtitleContainer: {
     marginBottom: '24px',
     padding: '16px',
     backgroundColor: '#f5f5f5',
     borderRadius: '4px',
   },
-});
+}));
 
 // Step titles
 const steps = [
@@ -68,6 +73,28 @@ const steps = [
   'SQL Query Builder',
   'API Integration',
 ];
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  value: PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
+};
 
 function App() {
   const classes = useStyles();
@@ -204,6 +231,8 @@ LIMIT :limit;`);
     { name: 'categories', columns: ['id', 'name', 'description', 'slug', 'parent_id'] },
     { name: 'post_categories', columns: ['post_id', 'category_id', 'is_primary'] },
   ]);
+  const [tabValue, setTabValue] = useState(0);
+  const [apis, setApis] = useState([]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -235,6 +264,15 @@ LIMIT :limit;`);
 
   const handleSqlQueryChange = (query) => {
     setSqlQuery(query);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  const handleApiCreated = (newApi) => {
+    setApis((prevApis) => [...prevApis, newApi]);
+    setTabValue(1); // Switch to lineage view after API creation
   };
 
   // Render the current step content
@@ -289,93 +327,68 @@ LIMIT :limit;`);
     }
   };
 
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(
-      AppBar,
-      { position: 'fixed', className: classes.appBar },
-      React.createElement(
-        Toolbar,
-        null,
-        React.createElement(
-          Typography,
-          { variant: 'h6', className: classes.title },
-          'API/Form Request Builder'
-        )
-      )
-    ),
-    React.createElement(
-      Container,
-      { maxWidth: 'lg', className: classes.mainContainer },
-      React.createElement(
-        Paper,
-        { elevation: 3, className: classes.paper },
-        React.createElement(
-          Stepper,
-          { activeStep: activeStep, className: classes.stepper },
-          steps.map((label) => React.createElement(
-            Step,
-            { key: label },
-            React.createElement(
-              StepLabel,
-              null,
-              label
-            )
-          ))
-        ),
-        React.createElement(
-          'div',
-          { className: classes.subtitleContainer },
-          React.createElement(
-            Typography,
-            { variant: 'h5', component: 'h2', align: 'center', gutterBottom: true },
-            steps[activeStep]
-          ),
-          React.createElement(
-            Typography,
-            { variant: 'body1', align: 'center', color: 'textSecondary' },
-            activeStep === 0 ? 'Configure your database connection settings' :
-            activeStep === 1 ? 'Define relationships between database tables' :
-            activeStep === 2 ? 'Configure request parameters and response fields' :
-            activeStep === 3 ? 'Build and optimize SQL queries' :
-            'Review and finalize your API configuration'
-          )
-        ),
-        React.createElement(
-          'div',
-          { className: classes.stepContent },
-          getStepContent(activeStep)
-        ),
-        React.createElement(
-          Divider,
-          { style: { margin: '32px 0 24px' } }
-        ),
-        React.createElement(
-          'div',
-          { className: classes.buttonContainer },
-          React.createElement(
-            Button,
-            {
-              disabled: activeStep === 0,
-              onClick: handleBack,
-              variant: 'outlined',
-            },
-            'Back'
-          ),
-          React.createElement(
-            Button,
-            {
-              variant: 'contained',
-              color: 'primary',
-              onClick: handleNext,
-              disabled: activeStep === steps.length - 1,
-            },
-            activeStep === steps.length - 1 ? 'Finish' : 'Next'
-          )
-        )
-      )
-    )
+  return (
+    <div className={classes.root}>
+      <AppBar position="static" className={classes.appBar}>
+        <Toolbar>
+          <Typography variant="h6" className={classes.title}>
+            API低代码平台
+          </Typography>
+        </Toolbar>
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="simple tabs example">
+          <Tab label="API构建" />
+          <Tab label="API血缘" />
+        </Tabs>
+      </AppBar>
+
+      <Container maxWidth="lg" className={classes.container}>
+        <TabPanel value={tabValue} index={0}>
+          <Paper elevation={3} className={classes.paper}>
+            <Stepper activeStep={activeStep} className={classes.stepper}>
+              {steps.map((label) => (
+                <Step key={label} />
+              ))}
+            </Stepper>
+            <div className={classes.subtitleContainer}>
+              <Typography variant="h5" component="h2" align="center" gutterBottom>
+                {steps[activeStep]}
+              </Typography>
+              <Typography variant="body1" align="center" color="textSecondary">
+                {activeStep === 0 ? 'Configure your database connection settings' :
+                activeStep === 1 ? 'Define relationships between database tables' :
+                activeStep === 2 ? 'Configure request parameters and response fields' :
+                activeStep === 3 ? 'Build and optimize SQL queries' :
+                'Review and finalize your API configuration'}
+              </Typography>
+            </div>
+            <div className={classes.stepContent}>
+              {getStepContent(activeStep)}
+            </div>
+            <Divider style={{ margin: '32px 0 24px' }} />
+            <div className={classes.buttonContainer}>
+              <Button
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                variant="outlined"
+              >
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleNext}
+                disabled={activeStep === steps.length - 1}
+              >
+                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+              </Button>
+            </div>
+          </Paper>
+        </TabPanel>
+        <TabPanel value={tabValue} index={1}>
+          <ApiLineageManager apis={apis} />
+        </TabPanel>
+      </Container>
+    </div>
   );
 }
 

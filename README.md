@@ -1,44 +1,89 @@
-# React Demo Application
+# API构建与血缘管理系统
 
-A React application built with Material-UI and Tailwind CSS.
+一个基于React的API管理平台，支持API设计、表关系映射、SQL查询构建和API血缘关系追踪。
 
-## Technology Stack
+## 主要功能
 
-- React (Create React App)
-- Material-UI v4
-- Tailwind CSS
-- JavaScript (No JSX, pure React.createElement)
+### 表关系定义
+- 支持定义多种表关系：一对一、一对多、多对一、多对多、自引用等
+- 可视化表关系展示
+- SQL JOIN语句自动生成
+- 支持复杂JOIN条件自定义
 
-## Project Structure
+### SQL查询构建器
+- 支持ORDER BY排序功能
+- 支持GROUP BY分组和聚合功能
+- 直观的SQL预览
+- 支持拖放排序和分组字段
 
-- `src/components/`: React components
-- `src/utils/`: Utility functions
-- `src/constants/`: Constants
-- `src/assets/`: Images and static files
-- `src/App.js`: Main app entry
-- `src/index.css`: Global styles with Tailwind
+### API集成与HTTP Method管理
+- 支持标准HTTP方法（GET、POST、PUT、DELETE等）
+- 可视化的HTTP方法展示，使用颜色编码
+- 端点URL管理
+- 发布状态跟踪
 
-## Setup
+### API血缘关系
 
+#### 可视化血缘关系图
+- 节点和连线清晰展示API的上下游依赖
+- 支持放大、缩小和平移操作
+- 焦点模式突出显示选中API的依赖链
+- 使用颜色编码表示不同类型的依赖关系
+
+#### 依赖关系类型与元数据
+- 数据依赖：上游API提供数据给下游API
+- 功能依赖：下游API依赖上游API的功能
+- 同步调用：实时依赖关系
+- 异步调用：基于消息队列或事件的依赖
+- 支持记录数据交换格式和结构
+
+#### 影响分析
+- 变更影响评估：识别API变更可能影响的下游系统
+- 区分直接影响和间接影响
+- 风险评级和警告机制
+- 变更审批流程支持
+
+#### 血缘追踪
+- 数据来源追踪：从目标API向上游追溯数据源头
+- 数据消费追踪：从源API向下游追踪数据使用情况
+- 完整数据链路可视化
+- 数据转换和处理步骤记录
+
+#### 血缘管理功能
+- 按名称、类型、状态等过滤和搜索
+- 批量编辑血缘关系
+- 血缘关系导入导出
+- 版本控制和历史记录
+
+## 技术架构
+
+- 前端框架：React
+- UI组件库：Material-UI v4
+- 样式：Tailwind CSS
+- 可视化库：react-d3-graph
+- 数据管理：React Hooks
+
+## 开发指南
+
+### 安装
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
-npm start
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
 ```
 
-## Coding Style
+### 运行开发服务器
+```bash
+npm start
+```
 
-- Functional components with React.createElement
-- Arrow functions
-- Destructured props
-- Tailwind CSS for styling
-- Material-UI components
-- ESLint + Prettier configuration 
+### 构建生产版本
+```bash
+npm run build
+```
+
+## 未来规划
+
+- 增加自动API血缘发现功能
+- 与CI/CD流程集成
+- 支持API文档自动生成
+- 增加团队协作和角色管理功能
+- 基于血缘关系的API测试自动化 
